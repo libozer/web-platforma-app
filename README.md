@@ -1,4 +1,4 @@
-# TourMind
+# Tourist
 
 Веб-платформа для подбора туристических маршрутов с персональными рекомендациями.
 
@@ -9,7 +9,7 @@
 - `src/` - React-клиент на Vite.
 - `server/src/` - Node.js API на Express и TypeScript.
 - `database/schema.sql` - структура PostgreSQL.
-- `database/seed.sql` - стартовые туристические объекты для Минска.
+- `database/seed.sql` - стартовые туристические объекты для Беларуси.
 - `docs/diploma-structure.md` - как реализованный проект закрывает разделы пояснительной записки.
 
 ## Запуск

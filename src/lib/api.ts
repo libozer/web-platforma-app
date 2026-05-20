@@ -9,7 +9,7 @@ import type {
 } from "../types";
 
 const API_URL = import.meta.env.VITE_API_URL ?? "http://127.0.0.1:4000/api";
-const TOKEN_KEY = "tourmind_token";
+const TOKEN_KEY = "tourist_token";
 
 export function getStoredToken() {
   return localStorage.getItem(TOKEN_KEY);

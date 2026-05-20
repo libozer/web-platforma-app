@@ -224,7 +224,7 @@ function App() {
         <div className="brand-mark compact-brand">
           <Compass size={25} />
           <div>
-            <strong>TourMind</strong>
+            <strong>Tourist</strong>
             <span>{user.name}</span>
           </div>
         </div>

@@ -43,7 +43,7 @@ export function AuthPanel({ onAuthenticated }: AuthPanelProps) {
         <div className="brand-mark">
           <Compass size={28} />
           <div>
-            <strong>TourMind</strong>
+            <strong>Tourist</strong>
             <span>Подбор туристических маршрутов</span>
           </div>
         </div>

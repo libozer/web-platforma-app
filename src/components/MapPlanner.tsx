@@ -1,4 +1,4 @@
-import { FormEvent, useMemo, useState } from "react";
+import { FormEvent, useEffect, useMemo, useState } from "react";
 import L from "leaflet";
 import {
   Car,
@@ -17,7 +17,8 @@ import {
   Marker,
   Polyline,
   Popup,
-  TileLayer
+  TileLayer,
+  useMap
 } from "react-leaflet";
 import { budgetLabels, categoryLabels, categoryOptions } from "../lib/labels";
 import { formatDistance, formatDuration } from "../lib/format";
@@ -51,7 +52,7 @@ interface MapPlannerProps {
   }) => void;
 }
 
-const minskCenter: [number, number] = [53.9023, 27.5619];
+const belarusCenter: [number, number] = [53.7, 27.9];
 
 export function MapPlanner({
   attractions,
@@ -71,7 +72,7 @@ export function MapPlanner({
 }: MapPlannerProps) {
   const [search, setSearch] = useState("");
   const [category, setCategory] = useState("all");
-  const [routeName, setRouteName] = useState("Маршрут по Минску");
+  const [routeName, setRouteName] = useState("Маршрут по Беларуси");
   const [routeDate, setRouteDate] = useState("");
 
   const selectedAttractions = useMemo(
@@ -97,15 +98,40 @@ export function MapPlanner({
     });
   }, [attractions, category, search]);
 
-  const routePoints = preview?.points ?? selectedAttractions;
-  const routePositions = routePoints.map(
-    (point) => [point.latitude, point.longitude] as [number, number]
+  const routePoints = useMemo(
+    () => preview?.points ?? selectedAttractions,
+    [preview?.points, selectedAttractions]
   );
-  const routeLinePositions =
-    preview?.geometry.length ? preview.geometry : routePositions;
+  const routePositions = useMemo(
+    () =>
+      routePoints.map(
+        (point) => [point.latitude, point.longitude] as [number, number]
+      ),
+    [routePoints]
+  );
+  const routeLinePositions = useMemo(
+    () => (preview?.geometry.length ? preview.geometry : routePositions),
+    [preview?.geometry, routePositions]
+  );
   const routeLineColor = routeMode === "car" ? "#2563eb" : "#16a34a";
 
-  const center = routePositions[0] ?? minskCenter;
+  const allAttractionPositions = useMemo(
+    () =>
+      attractions.map(
+        (attraction) =>
+          [attraction.latitude, attraction.longitude] as [number, number]
+      ),
+    [attractions]
+  );
+  const mapViewPositions = useMemo(
+    () =>
+      routeLinePositions.length > 0
+        ? routeLinePositions
+        : allAttractionPositions,
+    [allAttractionPositions, routeLinePositions]
+  );
+  const center = mapViewPositions[0] ?? belarusCenter;
+  const initialZoom = selectedIds.length ? 12 : 7;
 
   function submitRoute(event: FormEvent) {
     event.preventDefault();
@@ -217,7 +243,8 @@ export function MapPlanner({
 
       <div className="map-workspace">
         <div className="map-surface">
-          <MapContainer center={center} zoom={12} scrollWheelZoom className="map">
+          <MapContainer center={center} zoom={initialZoom} scrollWheelZoom className="map">
+            <MapAutoView positions={mapViewPositions} />
             <TileLayer
               attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
               url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
@@ -361,6 +388,29 @@ export function MapPlanner({
       </div>
     </section>
   );
+}
+
+function MapAutoView({ positions }: { positions: [number, number][] }) {
+  const map = useMap();
+
+  useEffect(() => {
+    if (positions.length >= 2) {
+      map.fitBounds(L.latLngBounds(positions), {
+        padding: [36, 36],
+        maxZoom: 13
+      });
+      return;
+    }
+
+    if (positions.length === 1) {
+      map.setView(positions[0], 12);
+      return;
+    }
+
+    map.setView(belarusCenter, 7);
+  }, [map, positions]);
+
+  return null;
 }
 
 function makeMarkerIcon(selected: boolean) {
