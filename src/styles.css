@@ -324,17 +324,21 @@ strong {
 .planner-layout {
   display: grid;
   grid-template-columns: minmax(340px, 430px) minmax(0, 1fr);
-  min-height: calc(100vh - 68px);
+  height: calc(100vh - 68px);
+  min-height: 0;
+  overflow: hidden;
 }
 
 .planner-sidebar {
   min-width: 0;
+  min-height: 0;
   display: grid;
   grid-template-rows: auto auto auto 1fr;
   gap: 14px;
   padding: 18px;
   border-right: 1px solid #dbe2ec;
   background: #f8fafc;
+  overflow: hidden;
 }
 
 .panel-heading {
@@ -426,7 +430,9 @@ strong {
 
 .attraction-list {
   min-height: 0;
-  overflow: auto;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  scrollbar-gutter: stable;
   display: grid;
   gap: 12px;
   padding-right: 4px;
@@ -496,15 +502,19 @@ strong {
 
 .map-workspace {
   min-width: 0;
+  min-height: 0;
+  height: 100%;
   display: grid;
   grid-template-columns: minmax(0, 1fr) 360px;
   gap: 18px;
   padding: 18px;
+  overflow: hidden;
 }
 
 .map-surface {
   min-width: 0;
-  min-height: 560px;
+  min-height: 0;
+  height: 100%;
   overflow: hidden;
   border: 1px solid #cdd6e3;
   border-radius: 8px;
@@ -514,7 +524,19 @@ strong {
 .map {
   width: 100%;
   height: 100%;
-  min-height: 560px;
+  min-height: 0;
+}
+
+.map .leaflet-control-attribution {
+  opacity: 0.48;
+  font-size: 10px;
+  line-height: 1.2;
+  background: rgba(255, 255, 255, 0.62);
+  transition: opacity 0.18s ease;
+}
+
+.map .leaflet-control-attribution:hover {
+  opacity: 0.9;
 }
 
 .route-marker {
@@ -547,6 +569,13 @@ strong {
   border-radius: 8px;
   background: #ffffff;
   box-shadow: 0 16px 42px rgba(24, 34, 52, 0.08);
+}
+
+.route-dock {
+  max-height: calc(100vh - 104px);
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  scrollbar-gutter: stable;
 }
 
 .route-dock-header {
@@ -642,7 +671,9 @@ strong {
   display: grid;
   gap: 8px;
   max-height: 260px;
-  overflow: auto;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  scrollbar-gutter: stable;
 }
 
 .selected-route li {
@@ -681,6 +712,11 @@ strong {
 
 .profile-panel {
   max-width: 820px;
+}
+
+.admin-panel {
+  width: min(1180px, calc(100vw - 36px));
+  max-width: 1180px;
 }
 
 .chip-grid {
@@ -725,6 +761,99 @@ strong {
   color: #172033;
 }
 
+.admin-stats {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.admin-stats span {
+  display: grid;
+  gap: 3px;
+  min-height: 68px;
+  align-content: center;
+  padding: 12px;
+  border-radius: 8px;
+  color: #64748b;
+  background: #f1f5f9;
+  font-size: 13px;
+  font-weight: 800;
+}
+
+.admin-stats strong {
+  color: #172033;
+  font-size: 22px;
+}
+
+.admin-layout {
+  display: grid;
+  grid-template-columns: 320px minmax(0, 1fr);
+  gap: 16px;
+  min-width: 0;
+}
+
+.admin-users,
+.admin-routes {
+  min-width: 0;
+  display: grid;
+  align-content: start;
+  gap: 10px;
+}
+
+.admin-user {
+  min-width: 0;
+  display: grid;
+  grid-template-columns: 34px minmax(0, 1fr);
+  align-items: center;
+  gap: 10px;
+  padding: 10px;
+  border: 1px solid #dce4ef;
+  border-radius: 8px;
+  color: #31415d;
+  background: #ffffff;
+  text-align: left;
+}
+
+.admin-user.active {
+  border-color: #2563eb;
+  background: #eff6ff;
+}
+
+.admin-user strong,
+.admin-user small {
+  display: block;
+}
+
+.admin-user small {
+  margin-top: 3px;
+  color: #64748b;
+  font-size: 12px;
+  overflow-wrap: anywhere;
+}
+
+.avatar-badge {
+  width: 34px;
+  height: 34px;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  color: #ffffff;
+  background: #0f766e;
+  font-weight: 900;
+}
+
+.owner-line {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px 10px;
+  color: #64748b;
+  font-size: 13px;
+}
+
+.owner-line strong {
+  color: #172033;
+}
+
 .empty-state {
   min-height: 280px;
   display: grid;
@@ -739,6 +868,10 @@ strong {
 
 .empty-state h3 {
   color: #172033;
+}
+
+.empty-state.compact {
+  min-height: 220px;
 }
 
 .route-list {
@@ -784,6 +917,13 @@ strong {
   background: #fee2e2;
 }
 
+.admin-route-card .mini-route {
+  max-height: 130px;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  padding-right: 4px;
+}
+
 @media (max-width: 1180px) {
   .planner-layout {
     grid-template-columns: 360px minmax(0, 1fr);
@@ -791,10 +931,20 @@ strong {
 
   .map-workspace {
     grid-template-columns: 1fr;
+    height: 100%;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+  }
+
+  .map-surface,
+  .map {
+    min-height: 560px;
   }
 
   .route-dock {
     align-self: stretch;
+    max-height: none;
+    overflow: visible;
   }
 }
 
@@ -817,11 +967,20 @@ strong {
 
   .planner-layout {
     grid-template-columns: 1fr;
+    height: auto;
+    min-height: calc(100vh - 68px);
+    overflow: visible;
+  }
+
+  .admin-layout,
+  .admin-stats {
+    grid-template-columns: 1fr;
   }
 
   .planner-sidebar {
     border-right: 0;
     border-bottom: 1px solid #dbe2ec;
+    overflow: visible;
   }
 
   .attraction-list {
@@ -830,6 +989,8 @@ strong {
 
   .map-workspace {
     padding: 12px;
+    height: auto;
+    overflow: visible;
   }
 }
 
@@ -841,6 +1002,8 @@ strong {
   .toolbar-row,
   .attraction-card,
   .summary-grid,
+  .admin-layout,
+  .admin-stats,
   .route-list {
     grid-template-columns: 1fr;
   }

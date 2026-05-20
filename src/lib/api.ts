@@ -1,4 +1,6 @@
 import type {
+  AdminRouteWithOwner,
+  AdminUserSummary,
   Attraction,
   AuthResponse,
   RecommendationPayload,
@@ -100,6 +102,25 @@ export async function getRoutes() {
 
 export async function removeRoute(id: string) {
   await request<void>(`/routes/${id}`, {
+    method: "DELETE"
+  });
+}
+
+export async function getAdminUsers() {
+  return request<{ users: AdminUserSummary[] }>("/admin/users");
+}
+
+export async function getAdminRoutes(userId?: string) {
+  const query = new URLSearchParams();
+  if (userId) query.set("userId", userId);
+
+  return request<{ routes: AdminRouteWithOwner[] }>(
+    `/admin/routes${query.toString() ? `?${query}` : ""}`
+  );
+}
+
+export async function removeAdminRoute(id: string) {
+  await request<void>(`/admin/routes/${id}`, {
     method: "DELETE"
   });
 }

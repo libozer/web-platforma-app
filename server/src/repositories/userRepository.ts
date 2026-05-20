@@ -1,5 +1,5 @@
 import { query } from "../db.js";
-import type { PublicUser, UserPreferences } from "../types.js";
+import type { AdminUserSummary, PublicUser, UserPreferences } from "../types.js";
 
 interface UserRow {
   id: string;
@@ -10,6 +10,10 @@ interface UserRow {
   avatar_url: string | null;
   preferences: UserPreferences;
   created_at: Date;
+}
+
+interface AdminUserRow extends UserRow {
+  route_count: string;
 }
 
 export interface UserWithPassword extends PublicUser {
@@ -70,6 +74,21 @@ export async function findUserWithPasswordByEmail(email: string) {
   } satisfies UserWithPassword;
 }
 
+export async function listUsersForAdmin() {
+  const result = await query<AdminUserRow>(
+    `SELECT
+       u.*,
+       COUNT(r.id)::int AS route_count
+     FROM users u
+     LEFT JOIN routes r ON r.user_id = u.id
+     WHERE u.is_active = TRUE
+     GROUP BY u.id
+     ORDER BY u.created_at DESC`
+  );
+
+  return result.rows.map(toAdminUserSummary);
+}
+
 export async function updateUserProfile(
   id: string,
   input: {
@@ -113,6 +132,13 @@ export function toPublicUser(row: UserRow): PublicUser {
     avatarUrl: row.avatar_url,
     preferences: normalizePreferences(row.preferences),
     createdAt: row.created_at.toISOString()
+  };
+}
+
+function toAdminUserSummary(row: AdminUserRow): AdminUserSummary {
+  return {
+    ...toPublicUser(row),
+    routeCount: Number(row.route_count)
   };
 }
 

@@ -75,3 +75,11 @@ export interface RouteWithPoints {
   createdAt: string;
   points: RoutePoint[];
 }
+
+export interface AdminUserSummary extends PublicUser {
+  routeCount: number;
+}
+
+export interface AdminRouteWithOwner extends RouteWithPoints {
+  owner: Pick<PublicUser, "id" | "name" | "email">;
+}

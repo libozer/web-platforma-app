@@ -1,3 +1,24 @@
+INSERT INTO users (name, email, password_hash, role, preferences)
+VALUES (
+  'Администратор',
+  'admin@tourist.local',
+  '$2a$10$3IEwggKEr8HWvkXc1L7eUeAzX.zVjRaHsPkOrojelouofEZwyxJvK',
+  'admin',
+  '{
+    "interests": ["history", "culture", "architecture"],
+    "budget": "mid",
+    "pace": "balanced",
+    "maxDuration": 480
+  }'::jsonb
+)
+ON CONFLICT (email) DO UPDATE SET
+  name = EXCLUDED.name,
+  password_hash = EXCLUDED.password_hash,
+  role = EXCLUDED.role,
+  preferences = EXCLUDED.preferences,
+  is_active = TRUE,
+  updated_at = NOW();
+
 INSERT INTO attractions (
   name, city, address, category, description, latitude, longitude,
   duration_minutes, budget_level, rating, image_url, tags
@@ -323,6 +344,233 @@ INSERT INTO attractions (
   4.3,
   'https://commons.wikimedia.org/wiki/Special:FilePath/The_chalkpit_near_Krasnoselsk_-_panoramio.jpg?width=900',
   ARRAY['природа', 'панорама', 'фото']
+)
+ON CONFLICT (name, city) DO UPDATE SET
+  address = EXCLUDED.address,
+  category = EXCLUDED.category,
+  description = EXCLUDED.description,
+  latitude = EXCLUDED.latitude,
+  longitude = EXCLUDED.longitude,
+  duration_minutes = EXCLUDED.duration_minutes,
+  budget_level = EXCLUDED.budget_level,
+  rating = EXCLUDED.rating,
+  image_url = EXCLUDED.image_url,
+  tags = EXCLUDED.tags;
+
+-- Европейские туристические объекты
+INSERT INTO attractions (
+  name, city, address, category, description, latitude, longitude,
+  duration_minutes, budget_level, rating, image_url, tags
+) VALUES
+(
+  'Вавельский замок',
+  'Краков',
+  'Wawel 5',
+  'history',
+  'Королевский замок на Вавельском холме, один из главных исторических символов Польши.',
+  50.054000,
+  19.935200,
+  120,
+  'mid',
+  4.9,
+  'https://commons.wikimedia.org/wiki/Special:FilePath/Wawel_castle.jpg?width=900',
+  ARRAY['польша', 'краков', 'замок', 'история']
+),
+(
+  'Мальборкский замок',
+  'Мальборк',
+  'Starościńska 1',
+  'history',
+  'Огромная кирпичная крепость Тевтонского ордена на берегу Ногата.',
+  54.039700,
+  19.027800,
+  150,
+  'mid',
+  4.8,
+  'https://commons.wikimedia.org/wiki/Special:FilePath/Panorama_of_Malbork_Castle.jpg?width=900',
+  ARRAY['польша', 'мальборк', 'замок', 'крепость']
+),
+(
+  'Бранденбургские ворота',
+  'Берлин',
+  'Pariser Platz',
+  'architecture',
+  'Неоклассические ворота в центре Берлина и символ объединения Германии.',
+  52.516300,
+  13.377700,
+  45,
+  'free',
+  4.8,
+  'https://commons.wikimedia.org/wiki/Special:FilePath/Brandenburger_Tor_abends.jpg?width=900',
+  ARRAY['германия', 'берлин', 'архитектура', 'символ']
+),
+(
+  'Замок Нойшванштайн',
+  'Швангау',
+  'Neuschwansteinstraße 20',
+  'history',
+  'Романтический замок Людвига II на фоне альпийских склонов.',
+  47.557600,
+  10.749800,
+  150,
+  'high',
+  4.9,
+  'https://commons.wikimedia.org/wiki/Special:FilePath/Schloss-Neuschwanstein.jpg?width=900',
+  ARRAY['германия', 'бавария', 'замок', 'горы']
+),
+(
+  'Эйфелева башня',
+  'Париж',
+  'Champ de Mars',
+  'architecture',
+  'Главный символ Парижа с обзорными площадками и видом на город.',
+  48.858400,
+  2.294500,
+  120,
+  'high',
+  4.9,
+  'https://commons.wikimedia.org/wiki/Special:FilePath/The_Eiffel_Tower.JPG?width=900',
+  ARRAY['франция', 'париж', 'башня', 'панорама']
+),
+(
+  'Лувр',
+  'Париж',
+  'Rue de Rivoli',
+  'culture',
+  'Один из крупнейших музеев мира с коллекциями искусства и историческим дворцом.',
+  48.860600,
+  2.337600,
+  180,
+  'high',
+  4.9,
+  'https://commons.wikimedia.org/wiki/Special:FilePath/Inside_the_Louvre_Pyramid.jpg?width=900',
+  ARRAY['франция', 'париж', 'музей', 'культура']
+),
+(
+  'Колизей',
+  'Рим',
+  'Piazza del Colosseo',
+  'history',
+  'Античный амфитеатр и один из самых узнаваемых символов Рима.',
+  41.890200,
+  12.492200,
+  120,
+  'high',
+  4.9,
+  'https://commons.wikimedia.org/wiki/Special:FilePath/Colosseum_Rome_.jpg?width=900',
+  ARRAY['италия', 'рим', 'античность', 'история']
+),
+(
+  'Пизанская башня',
+  'Пиза',
+  'Piazza del Duomo',
+  'architecture',
+  'Знаменитая наклонная колокольня на площади Чудес.',
+  43.723000,
+  10.396600,
+  90,
+  'mid',
+  4.7,
+  'https://commons.wikimedia.org/wiki/Special:FilePath/The_Leaning_Tower_of_Pisa.jpg?width=900',
+  ARRAY['италия', 'пиза', 'башня', 'архитектура']
+),
+(
+  'Саграда Фамилия',
+  'Барселона',
+  'Carrer de Mallorca 401',
+  'architecture',
+  'Базилика Антонио Гауди с необычной архитектурой и продолжающимся строительством.',
+  41.403600,
+  2.174400,
+  130,
+  'high',
+  4.9,
+  'https://commons.wikimedia.org/wiki/Special:FilePath/Sagrada_Familia_.jpg?width=900',
+  ARRAY['испания', 'барселона', 'гауди', 'архитектура']
+),
+(
+  'Альгамбра',
+  'Гранада',
+  'Calle Real de la Alhambra',
+  'history',
+  'Дворцово-крепостной комплекс с садами, двориками и исламской архитектурой.',
+  37.176100,
+  -3.588100,
+  180,
+  'high',
+  4.9,
+  'https://commons.wikimedia.org/wiki/Special:FilePath/Alhambra_de_Granada_2024.jpg?width=900',
+  ARRAY['испания', 'гранада', 'дворец', 'история']
+),
+(
+  'Дворец Шёнбрунн',
+  'Вена',
+  'Schönbrunner Schloßstraße 47',
+  'architecture',
+  'Императорская резиденция Габсбургов с садами, залами и павильонами.',
+  48.184500,
+  16.312200,
+  180,
+  'high',
+  4.8,
+  'https://commons.wikimedia.org/wiki/Special:FilePath/Schonbrunn_Palace_-_Vienna.jpg?width=900',
+  ARRAY['австрия', 'вена', 'дворец', 'сад']
+),
+(
+  'Афинский Акрополь',
+  'Афины',
+  'Acropolis',
+  'history',
+  'Древняя цитадель над Афинами с храмами классической Греции.',
+  37.971500,
+  23.726700,
+  150,
+  'high',
+  4.9,
+  'https://commons.wikimedia.org/wiki/Special:FilePath/Acropolis_-_Athens.JPG?width=900',
+  ARRAY['греция', 'афины', 'античность', 'история']
+),
+(
+  'Маттерхорн',
+  'Церматт',
+  'Matterhorn',
+  'nature',
+  'Знаменитая альпийская вершина у Церматта с панорамными маршрутами.',
+  45.976300,
+  7.658600,
+  180,
+  'high',
+  4.9,
+  'https://commons.wikimedia.org/wiki/Special:FilePath/Matterhorn_%286888207113%29.jpg?width=900',
+  ARRAY['швейцария', 'альпы', 'горы', 'природа']
+),
+(
+  'Карлов мост',
+  'Прага',
+  'Karlův most',
+  'architecture',
+  'Исторический каменный мост через Влтаву со скульптурами и видами на Прагу.',
+  50.086500,
+  14.411400,
+  70,
+  'free',
+  4.9,
+  'https://commons.wikimedia.org/wiki/Special:FilePath/The_Charles_Bridge%2C_Prague..jpg?width=900',
+  ARRAY['чехия', 'прага', 'мост', 'архитектура']
+),
+(
+  'Пражский Град',
+  'Прага',
+  'Pražský hrad',
+  'history',
+  'Крупный замковый комплекс с дворцами, соборами и видами на город.',
+  50.091100,
+  14.401600,
+  160,
+  'mid',
+  4.9,
+  'https://commons.wikimedia.org/wiki/Special:FilePath/Prague_Castle.jpg?width=900',
+  ARRAY['чехия', 'прага', 'замок', 'история']
 )
 ON CONFLICT (name, city) DO UPDATE SET
   address = EXCLUDED.address,

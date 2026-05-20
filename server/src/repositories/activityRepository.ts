@@ -2,7 +2,12 @@ import { query } from "../db.js";
 
 export async function trackActivity(input: {
   userId: string;
-  activityType: "route_view" | "attraction_view" | "search" | "route_created";
+  activityType:
+    | "route_view"
+    | "attraction_view"
+    | "search"
+    | "route_created"
+    | "admin_route_deleted";
   entityId?: string;
   metadata?: Record<string, unknown>;
 }) {

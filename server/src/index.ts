@@ -8,6 +8,7 @@ import express, {
 import { ZodError } from "zod";
 import { config } from "./config.js";
 import { pool } from "./db.js";
+import adminRoutes from "./routes/admin.js";
 import attractionRoutes from "./routes/attractions.js";
 import authRoutes from "./routes/auth.js";
 import profileRoutes from "./routes/profile.js";
@@ -31,6 +32,7 @@ app.get("/api/health", (_req: Request, res: Response) => {
 
 app.use("/api/auth", authRoutes);
 app.use("/api/profile", profileRoutes);
+app.use("/api/admin", adminRoutes);
 app.use("/api/attractions", attractionRoutes);
 app.use("/api/routes", routeRoutes);
 app.use("/api/recommendations", recommendationRoutes);

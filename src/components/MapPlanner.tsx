@@ -245,6 +245,7 @@ export function MapPlanner({
         <div className="map-surface">
           <MapContainer center={center} zoom={initialZoom} scrollWheelZoom className="map">
             <MapAutoView positions={mapViewPositions} />
+            <MapAttributionCleaner />
             <TileLayer
               attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
               url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
@@ -409,6 +410,16 @@ function MapAutoView({ positions }: { positions: [number, number][] }) {
 
     map.setView(belarusCenter, 7);
   }, [map, positions]);
+
+  return null;
+}
+
+function MapAttributionCleaner() {
+  const map = useMap();
+
+  useEffect(() => {
+    map.attributionControl.setPrefix(false);
+  }, [map]);
 
   return null;
 }

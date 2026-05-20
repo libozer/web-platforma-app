@@ -52,3 +52,18 @@ export function authenticate(
     next(new ApiError(401, "Сессия истекла или токен недействителен"));
   }
 }
+
+export function requireAdmin(
+  req: Request,
+  _res: Response,
+  next: NextFunction
+) {
+  const authReq = req as AuthenticatedRequest;
+
+  if (authReq.user.role !== "admin") {
+    next(new ApiError(403, "Доступ разрешён только администратору"));
+    return;
+  }
+
+  next();
+}

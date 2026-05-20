@@ -4,26 +4,33 @@ import {
   LogOut,
   Map,
   Route,
+  ShieldCheck,
   UserRound,
   WifiOff
 } from "lucide-react";
 import {
   clearStoredToken,
+  getAdminRoutes,
+  getAdminUsers,
   getAttractions,
   getProfile,
   getRecommendations,
   getRoutes,
   getStoredToken,
   previewRoute,
+  removeAdminRoute,
   removeRoute,
   saveRoute,
   updateProfile
 } from "./lib/api";
+import { AdminPanel } from "./components/AdminPanel";
 import { AuthPanel } from "./components/AuthPanel";
 import { MapPlanner } from "./components/MapPlanner";
 import { ProfilePanel } from "./components/ProfilePanel";
 import { SavedRoutes } from "./components/SavedRoutes";
 import type {
+  AdminRouteWithOwner,
+  AdminUserSummary,
   Attraction,
   RecommendationPayload,
   RoutePreview,
@@ -33,7 +40,7 @@ import type {
   UserPreferences
 } from "./types";
 
-type View = "planner" | "profile" | "routes";
+type View = "planner" | "profile" | "routes" | "admin";
 
 function App() {
   const [user, setUser] = useState<User | null>(null);
@@ -42,6 +49,9 @@ function App() {
   const [recommendations, setRecommendations] =
     useState<RecommendationPayload | null>(null);
   const [routes, setRoutes] = useState<RouteWithPoints[]>([]);
+  const [adminUsers, setAdminUsers] = useState<AdminUserSummary[]>([]);
+  const [adminRoutes, setAdminRoutes] = useState<AdminRouteWithOwner[]>([]);
+  const [adminUserId, setAdminUserId] = useState("");
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
   const [optimize, setOptimize] = useState(true);
   const [routeMode, setRouteMode] = useState<TravelMode>("walk");
@@ -73,6 +83,11 @@ function App() {
     if (!user) return;
     loadWorkspace();
   }, [user?.id]);
+
+  useEffect(() => {
+    if (user?.role !== "admin" || view !== "admin") return;
+    loadAdminWorkspace();
+  }, [user?.role, view, adminUserId]);
 
   useEffect(() => {
     if (selectedIds.length < 2) {
@@ -107,6 +122,23 @@ function App() {
       setAttractions(attractionPayload.attractions);
       setRecommendations(recommendationPayload);
       setRoutes(routePayload.routes);
+    } catch (caught) {
+      setError(getErrorMessage(caught));
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  async function loadAdminWorkspace() {
+    setLoading(true);
+    setError("");
+    try {
+      const [userPayload, routePayload] = await Promise.all([
+        getAdminUsers(),
+        getAdminRoutes(adminUserId || undefined)
+      ]);
+      setAdminUsers(userPayload.users);
+      setAdminRoutes(routePayload.routes);
     } catch (caught) {
       setError(getErrorMessage(caught));
     } finally {
@@ -191,6 +223,29 @@ function App() {
     }
   }
 
+  async function handleAdminDeleteRoute(routeId: string) {
+    setLoading(true);
+    setError("");
+    try {
+      await removeAdminRoute(routeId);
+      setAdminRoutes((current) =>
+        current.filter((route) => route.id !== routeId)
+      );
+      setRoutes((current) => current.filter((route) => route.id !== routeId));
+      const [userPayload, routePayload] = await Promise.all([
+        getAdminUsers(),
+        getAdminRoutes(adminUserId || undefined)
+      ]);
+      setAdminUsers(userPayload.users);
+      setAdminRoutes(routePayload.routes);
+      setNotice("Маршрут удалён администратором");
+    } catch (caught) {
+      setError(getErrorMessage(caught));
+    } finally {
+      setLoading(false);
+    }
+  }
+
   function openRoute(route: RouteWithPoints) {
     setSelectedIds(route.points.map((point) => point.attraction.id));
     setView("planner");
@@ -202,6 +257,9 @@ function App() {
     setSelectedIds([]);
     setRecommendations(null);
     setRoutes([]);
+    setAdminUsers([]);
+    setAdminRoutes([]);
+    setAdminUserId("");
     setView("planner");
   }
 
@@ -254,6 +312,16 @@ function App() {
             <UserRound size={18} />
             Профиль
           </button>
+          {user.role === "admin" && (
+            <button
+              className={view === "admin" ? "active" : ""}
+              type="button"
+              onClick={() => setView("admin")}
+            >
+              <ShieldCheck size={18} />
+              Админ
+            </button>
+          )}
         </nav>
 
         <button
@@ -318,6 +386,18 @@ function App() {
           routes={routes}
           onOpenRoute={openRoute}
           onDeleteRoute={handleDeleteRoute}
+        />
+      )}
+
+      {view === "admin" && user.role === "admin" && (
+        <AdminPanel
+          users={adminUsers}
+          routes={adminRoutes}
+          selectedUserId={adminUserId}
+          loading={loading}
+          onSelectUser={setAdminUserId}
+          onRefresh={loadAdminWorkspace}
+          onDeleteRoute={handleAdminDeleteRoute}
         />
       )}
     </main>

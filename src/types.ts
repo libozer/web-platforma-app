@@ -75,6 +75,14 @@ export interface RouteWithPoints {
   points: RoutePoint[];
 }
 
+export interface AdminUserSummary extends User {
+  routeCount: number;
+}
+
+export interface AdminRouteWithOwner extends RouteWithPoints {
+  owner: Pick<User, "id" | "name" | "email">;
+}
+
 export interface GeneratedRoute {
   name: string;
   description: string;

@@ -1,6 +1,11 @@
 import type { PoolClient } from "pg";
 import { pool, query } from "../db.js";
-import type { Attraction, RouteSummary, RouteWithPoints } from "../types.js";
+import type {
+  AdminRouteWithOwner,
+  Attraction,
+  RouteSummary,
+  RouteWithPoints
+} from "../types.js";
 import { toAttraction } from "./attractionRepository.js";
 
 interface RouteRow {
@@ -13,6 +18,12 @@ interface RouteRow {
   route_date: Date | null;
   is_public: boolean;
   created_at: Date;
+}
+
+interface AdminRouteRow extends RouteRow {
+  owner_id: string;
+  owner_name: string;
+  owner_email: string;
 }
 
 interface RoutePointRow {
@@ -104,6 +115,37 @@ export async function listRoutesByUser(userId: string) {
   return result;
 }
 
+export async function listRoutesForAdmin(userId?: string) {
+  const params: string[] = [];
+  const where: string[] = ["u.is_active = TRUE"];
+
+  if (userId) {
+    params.push(userId);
+    where.push(`r.user_id = $${params.length}`);
+  }
+
+  const routes = await query<AdminRouteRow>(
+    `SELECT
+       r.*,
+       u.id AS owner_id,
+       u.name AS owner_name,
+       u.email AS owner_email
+     FROM routes r
+     JOIN users u ON u.id = r.user_id
+     WHERE ${where.join(" AND ")}
+     ORDER BY r.created_at DESC`,
+    params
+  );
+
+  const result: AdminRouteWithOwner[] = [];
+  for (const route of routes.rows) {
+    const routeWithPoints = await getRouteByIdForAdmin(route.id, route);
+    if (routeWithPoints) result.push(routeWithPoints);
+  }
+
+  return result;
+}
+
 export async function getRouteById(
   routeId: string,
   userId: string,
@@ -136,10 +178,65 @@ export async function getRouteById(
   return toRoute(routeResult.rows[0], pointResult.rows);
 }
 
+export async function getRouteByIdForAdmin(
+  routeId: string,
+  routeRow?: AdminRouteRow
+) {
+  const route =
+    routeRow ??
+    (
+      await query<AdminRouteRow>(
+        `SELECT
+           r.*,
+           u.id AS owner_id,
+           u.name AS owner_name,
+           u.email AS owner_email
+         FROM routes r
+         JOIN users u ON u.id = r.user_id
+         WHERE r.id = $1 AND u.is_active = TRUE`,
+        [routeId]
+      )
+    ).rows[0];
+
+  if (!route) return null;
+
+  const pointResult = await query<RoutePointRow>(
+    `SELECT
+       rp.id AS point_id,
+       rp.position,
+       rp.note,
+       rp.planned_start_time,
+       a.*
+     FROM route_points rp
+     JOIN attractions a ON a.id = rp.attraction_id
+     WHERE rp.route_id = $1
+     ORDER BY rp.position ASC`,
+    [routeId]
+  );
+
+  return {
+    ...toRoute(route, pointResult.rows),
+    owner: {
+      id: route.owner_id,
+      name: route.owner_name,
+      email: route.owner_email
+    }
+  } satisfies AdminRouteWithOwner;
+}
+
 export async function deleteRoute(routeId: string, userId: string) {
   const result = await query<RouteRow>(
     "DELETE FROM routes WHERE id = $1 AND user_id = $2 RETURNING *",
     [routeId, userId]
+  );
+
+  return (result.rowCount ?? 0) > 0;
+}
+
+export async function deleteRouteForAdmin(routeId: string) {
+  const result = await query<RouteRow>(
+    "DELETE FROM routes WHERE id = $1 RETURNING *",
+    [routeId]
   );
 
   return (result.rowCount ?? 0) > 0;
