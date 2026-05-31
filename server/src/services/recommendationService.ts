@@ -13,6 +13,10 @@ const budgetRank: Record<BudgetLevel, number> = {
   high: 3
 };
 
+const recommendedRouteCity = "Минск";
+const minRecommendedRoutePoints = 4;
+const maxRecommendedRoutePoints = 5;
+
 export interface ScoredAttraction extends Attraction {
   score: number;
   reason: string;
@@ -26,7 +30,11 @@ export function buildRecommendations(
     .map((attraction) => scoreAttraction(attraction, preferences))
     .sort((a, b) => b.score - a.score);
 
-  const routePoints = pickRoutePoints(scored, preferences);
+  const routeSource = scored.filter(isRecommendedRouteCityAttraction);
+  const routePoints = pickRoutePoints(
+    routeSource.length >= 2 ? routeSource : scored,
+    preferences
+  );
   const optimizedRoutePoints = optimizeAttractions(routePoints);
   const summary = buildRouteSummary(optimizedRoutePoints);
 
@@ -39,6 +47,10 @@ export function buildRecommendations(
       summary
     }
   };
+}
+
+function isRecommendedRouteCityAttraction(attraction: Attraction) {
+  return attraction.city === recommendedRouteCity;
 }
 
 function scoreAttraction(
@@ -74,13 +86,13 @@ function pickRoutePoints(
   for (const attraction of attractions) {
     const summary = buildRouteSummary([...selected, attraction]);
     if (
-      selected.length < 2 ||
+      selected.length < minRecommendedRoutePoints ||
       summary.totalDurationMinutes <= preferences.maxDuration
     ) {
       selected.push(attraction);
     }
 
-    if (selected.length >= 5) break;
+    if (selected.length >= maxRecommendedRoutePoints) break;
   }
 
   return selected;

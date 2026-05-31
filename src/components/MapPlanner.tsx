@@ -125,13 +125,13 @@ export function MapPlanner({
   );
   const mapViewPositions = useMemo(
     () =>
-      routeLinePositions.length > 0
+      routeLinePositions.length >= 2
         ? routeLinePositions
         : allAttractionPositions,
     [allAttractionPositions, routeLinePositions]
   );
   const center = mapViewPositions[0] ?? belarusCenter;
-  const initialZoom = selectedIds.length ? 12 : 7;
+  const initialZoom = selectedIds.length >= 2 ? 12 : 7;
 
   function submitRoute(event: FormEvent) {
     event.preventDefault();
@@ -400,11 +400,6 @@ function MapAutoView({ positions }: { positions: [number, number][] }) {
         padding: [36, 36],
         maxZoom: 13
       });
-      return;
-    }
-
-    if (positions.length === 1) {
-      map.setView(positions[0], 12);
       return;
     }
 
