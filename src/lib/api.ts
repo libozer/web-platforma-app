@@ -67,8 +67,13 @@ export async function getAttractions(params: {
   );
 }
 
-export async function getRecommendations() {
-  return request<RecommendationPayload>("/recommendations");
+export async function getRecommendations(variant = 0) {
+  const query = new URLSearchParams();
+  if (variant > 0) query.set("variant", String(variant));
+
+  return request<RecommendationPayload>(
+    `/recommendations${query.toString() ? `?${query}` : ""}`
+  );
 }
 
 export async function previewRoute(input: {

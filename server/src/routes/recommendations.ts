@@ -17,7 +17,13 @@ router.get(
     if (!user) throw new ApiError(404, "Профиль не найден");
 
     const attractions = await findAttractions();
-    res.json(buildRecommendations(attractions, user.preferences));
+    const variant = Number(req.query.variant ?? 0);
+
+    res.json(
+      buildRecommendations(attractions, user.preferences, {
+        variant: Number.isFinite(variant) ? variant : 0
+      })
+    );
   })
 );
 

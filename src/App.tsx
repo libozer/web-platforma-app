@@ -56,6 +56,7 @@ function App() {
   const [optimize, setOptimize] = useState(true);
   const [routeMode, setRouteMode] = useState<TravelMode>("walk");
   const [preview, setPreview] = useState<RoutePreview | null>(null);
+  const [recommendationVariant, setRecommendationVariant] = useState(0);
   const [initializing, setInitializing] = useState(true);
   const [loading, setLoading] = useState(false);
   const [notice, setNotice] = useState("");
@@ -116,7 +117,7 @@ function App() {
       const [attractionPayload, recommendationPayload, routePayload] =
         await Promise.all([
           getAttractions({}),
-          getRecommendations(),
+          getRecommendations(recommendationVariant),
           getRoutes()
         ]);
       setAttractions(attractionPayload.attractions);
@@ -150,7 +151,9 @@ function App() {
     setLoading(true);
     setError("");
     try {
-      setRecommendations(await getRecommendations());
+      const nextVariant = recommendationVariant + 1;
+      setRecommendationVariant(nextVariant);
+      setRecommendations(await getRecommendations(nextVariant));
       setNotice("Рекомендации обновлены");
     } catch (caught) {
       setError(getErrorMessage(caught));
@@ -200,7 +203,7 @@ function App() {
     try {
       const payload = await updateProfile(input);
       setUser(payload.user);
-      setRecommendations(await getRecommendations());
+      setRecommendations(await getRecommendations(recommendationVariant));
       setNotice("Профиль обновлён");
     } catch (caught) {
       setError(getErrorMessage(caught));
@@ -260,7 +263,25 @@ function App() {
     setAdminUsers([]);
     setAdminRoutes([]);
     setAdminUserId("");
+    setRecommendationVariant(0);
     setView("planner");
+  }
+
+  async function handleUseRecommendation(attractionIds: string[]) {
+    setSelectedIds(attractionIds);
+    setLoading(true);
+    setError("");
+
+    try {
+      const nextVariant = recommendationVariant + 1;
+      setRecommendationVariant(nextVariant);
+      setRecommendations(await getRecommendations(nextVariant));
+      setNotice("Рекомендованный маршрут добавлен");
+    } catch (caught) {
+      setError(getErrorMessage(caught));
+    } finally {
+      setLoading(false);
+    }
   }
 
   if (initializing) {
@@ -365,7 +386,7 @@ function App() {
           onRemoveAttraction={(id) =>
             setSelectedIds((current) => current.filter((item) => item !== id))
           }
-          onUseRecommendation={setSelectedIds}
+          onUseRecommendation={handleUseRecommendation}
           onRefreshRecommendations={refreshRecommendations}
           onOptimizeChange={setOptimize}
           onRouteModeChange={setRouteMode}
